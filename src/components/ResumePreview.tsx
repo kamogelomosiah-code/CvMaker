@@ -1,245 +1,182 @@
 import React from 'react';
-import { ResumeContent, Template } from '../types';
+import { ResumeContent, Template, ResumeCustomization } from '../types';
 import { cn } from '../lib/utils';
+import { DEFAULT_CUSTOMIZATION } from '../constants';
 
 interface ResumePreviewProps {
   content: ResumeContent;
   template: Template;
+  customization?: ResumeCustomization;
 }
 
-export const ResumePreview: React.FC<ResumePreviewProps> = ({ content, template }) => {
+export const ResumePreview: React.FC<ResumePreviewProps> = ({ content, template, customization = DEFAULT_CUSTOMIZATION }) => {
   const { personalInfo, experience, education, skills, projects } = content;
+  const { colors, layout } = customization;
 
   if (!personalInfo) return null;
 
+  const renderSection = (sectionName: string) => {
+    if (layout.hiddenSections.includes(sectionName)) return null;
+
+    switch (sectionName) {
+      case 'summary':
+        return personalInfo.summary ? (
+          <section key="summary" className="mb-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: colors.primary }}>Profile</h2>
+            <p className="text-sm leading-relaxed" style={{ color: colors.text }}>
+              {personalInfo.summary}
+            </p>
+          </section>
+        ) : null;
+      case 'experience':
+        return experience.length > 0 ? (
+          <section key="experience" className="mb-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-4 border-b pb-1" style={{ color: colors.primary, borderColor: colors.secondary }}>Experience</h2>
+            <div className="space-y-4">
+              {experience.map((exp) => (
+                <div key={exp.id}>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="font-bold text-base" style={{ color: colors.text }}>{exp.jobTitle}</h3>
+                    <span className="text-xs font-medium" style={{ color: colors.secondary }}>{exp.startDate} — {exp.endDate || "Present"}</span>
+                  </div>
+                  <p className="text-sm font-medium mb-2" style={{ color: colors.secondary }}>{exp.company}</p>
+                  <ul className="text-sm leading-relaxed list-disc list-inside space-y-1" style={{ color: colors.text }}>
+                    {exp.description.map((bullet, i) => (
+                      <li key={i}>{bullet}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+      case 'education':
+        return education.length > 0 ? (
+          <section key="education" className="mb-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-4 border-b pb-1" style={{ color: colors.primary, borderColor: colors.secondary }}>Education</h2>
+            <div className="space-y-4">
+              {education.map((edu) => (
+                <div key={edu.id}>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="font-bold text-base" style={{ color: colors.text }}>{edu.degree}</h3>
+                    <span className="text-xs font-medium" style={{ color: colors.secondary }}>{edu.startDate} — {edu.endDate}</span>
+                  </div>
+                  <p className="text-sm font-medium" style={{ color: colors.secondary }}>{edu.school}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+      case 'skills':
+        return skills.length > 0 ? (
+          <section key="skills" className="mb-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-3 border-b pb-1" style={{ color: colors.primary, borderColor: colors.secondary }}>Skills</h2>
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill, i) => (
+                <span key={i} className="text-xs font-medium px-2 py-1 rounded" style={{ backgroundColor: `${colors.secondary}20`, color: colors.text }}>
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </section>
+        ) : null;
+      case 'projects':
+        return projects.length > 0 ? (
+          <section key="projects" className="mb-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-4 border-b pb-1" style={{ color: colors.primary, borderColor: colors.secondary }}>Projects</h2>
+            <div className="space-y-4">
+              {projects.map((proj) => (
+                <div key={proj.id}>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="font-bold text-base" style={{ color: colors.text }}>{proj.name}</h3>
+                    {proj.link && <span className="text-xs font-medium" style={{ color: colors.secondary }}>{proj.link}</span>}
+                  </div>
+                  <p className="text-sm leading-relaxed" style={{ color: colors.text }}>{proj.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+      default:
+        return null;
+    }
+  };
+
+  // If it's the sleek-dark template, we might want to keep its specific layout but apply colors
   if (template.id === 'sleek-dark') {
     return (
       <div
         id="resume-preview"
-        className="bg-[#0A0A0A] text-white shadow-2xl mx-auto w-full aspect-[1/1.414] p-16 overflow-hidden flex flex-col"
-        style={{ fontFamily: 'Poppins' }}
+        className="shadow-2xl mx-auto w-full aspect-[1/1.414] p-16 overflow-hidden flex flex-col"
+        style={{ fontFamily: 'Poppins', backgroundColor: colors.background, color: colors.text }}
       >
         {/* Header */}
         <div className="flex justify-between items-start mb-16">
           <div className="flex flex-col">
-            <h1 className="text-7xl font-bold tracking-tighter leading-[0.8] mb-2 uppercase">
+            <h1 className="text-7xl font-bold tracking-tighter leading-[0.8] mb-2 uppercase" style={{ color: colors.primary }}>
               {personalInfo.fullName?.split(' ')[0] || "Your"}
             </h1>
-            <h1 className="text-7xl font-bold tracking-tighter leading-[0.8] uppercase text-gray-600">
+            <h1 className="text-7xl font-bold tracking-tighter leading-[0.8] uppercase" style={{ color: colors.secondary }}>
               {personalInfo.fullName?.split(' ').slice(1).join(' ') || "Name"}
             </h1>
           </div>
-          <div className="text-right text-[10px] font-bold uppercase tracking-widest text-gray-500 space-y-2">
-            <p className="hover:text-white transition-colors cursor-default">{personalInfo.phone || "+00 000 000 0000"}</p>
-            <p className="hover:text-white transition-colors cursor-default">{personalInfo.email || "hello@example.com"}</p>
-            <p className="hover:text-white transition-colors cursor-default">{personalInfo.location || "City, Country"}</p>
+          <div className="text-right text-[10px] font-bold uppercase tracking-widest space-y-2" style={{ color: colors.secondary }}>
+            <p>{personalInfo.phone || "+00 000 000 0000"}</p>
+            <p>{personalInfo.email || "hello@example.com"}</p>
+            <p>{personalInfo.location || "City, Country"}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-12 gap-16 flex-grow">
           {/* Left Column */}
           <div className="col-span-4 space-y-16">
-            <section>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-8 text-gray-600">Profile</h2>
-              <p className="text-[11px] leading-relaxed text-gray-400 font-medium">
-                {personalInfo.summary || "Professional summary goes here. Keep it concise and impactful."}
-              </p>
-            </section>
-
-            {skills.length > 0 && (
-              <section>
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-8 text-gray-600">Expertise</h2>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, i) => (
-                    <span key={i} className="text-[10px] font-bold uppercase tracking-wider text-white bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {education.length > 0 && (
-              <section>
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-8 text-gray-600">Education</h2>
-                <div className="space-y-8">
-                  {education.map((edu) => (
-                    <div key={edu.id}>
-                      <h3 className="text-[11px] font-bold text-white mb-1 uppercase tracking-wider">{edu.degree}</h3>
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">{edu.school}</p>
-                      <p className="text-[10px] font-medium text-gray-600">{edu.startDate} — {edu.endDate}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+            {layout.order.filter(s => ['summary', 'skills', 'education'].includes(s)).map(renderSection)}
           </div>
 
           {/* Right Column */}
           <div className="col-span-8 space-y-16">
-            {experience.length > 0 && (
-              <section>
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-10 text-gray-600">Experience</h2>
-                <div className="space-y-12">
-                  {experience.map((exp) => (
-                    <div key={exp.id} className="group">
-                      <div className="flex justify-between items-baseline mb-3">
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider group-hover:text-gray-300 transition-colors">{exp.jobTitle}</h3>
-                        <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{exp.startDate} — {exp.endDate || "Present"}</span>
-                      </div>
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4">{exp.company}</p>
-                      <ul className="text-[11px] text-gray-400 leading-relaxed font-medium list-disc list-inside space-y-1">
-                        {exp.description.map((bullet, i) => (
-                          <li key={i}>{bullet}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {projects.length > 0 && (
-              <section>
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-10 text-gray-600">Selected Projects</h2>
-                <div className="space-y-8">
-                  {projects.map((proj) => (
-                    <div key={proj.id}>
-                      <h3 className="text-[11px] font-bold text-white mb-2 uppercase tracking-wider">{proj.name}</h3>
-                      <p className="text-[11px] text-gray-400 leading-relaxed font-medium">{proj.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+            {layout.order.filter(s => ['experience', 'projects'].includes(s)).map(renderSection)}
           </div>
         </div>
       </div>
     );
   }
 
+  // Generic layout for other templates, applying customizations
   return (
     <div
       id="resume-preview"
-      className="bg-white shadow-2xl mx-auto w-full aspect-[1/1.414] p-12 overflow-hidden"
-      style={{ fontFamily: template.styles.fontFamily, color: '#1f2937' }}
+      className="shadow-2xl mx-auto w-full aspect-[1/1.414] p-12 overflow-hidden flex flex-col"
+      style={{ fontFamily: template.styles.fontFamily || 'Inter', backgroundColor: colors.background, color: colors.text }}
     >
       {/* Header */}
-      <header className="mb-8 border-b-2 pb-6" style={{ borderColor: template.styles.primaryColor }}>
-        <h1 className="text-4xl font-extrabold tracking-tight mb-2" style={{ color: template.styles.primaryColor }}>
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold mb-2" style={{ color: colors.primary }}>
           {personalInfo.fullName || "Your Name"}
         </h1>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 font-medium">
+        <div className="flex items-center justify-center gap-4 text-sm font-medium" style={{ color: colors.secondary }}>
           {personalInfo.email && <span>{personalInfo.email}</span>}
-          {personalInfo.phone && <span>{personalInfo.phone}</span>}
-          {personalInfo.location && <span>{personalInfo.location}</span>}
-          {personalInfo.website && <span>{personalInfo.website}</span>}
+          {personalInfo.phone && <span>• {personalInfo.phone}</span>}
+          {personalInfo.location && <span>• {personalInfo.location}</span>}
         </div>
-      </header>
+      </div>
 
-      {/* Summary */}
-      {personalInfo.summary && (
-        <section className="mb-8">
-          <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: template.styles.primaryColor }}>
-            Professional Summary
-          </h2>
-          <p className="text-sm leading-relaxed text-gray-700">{personalInfo.summary}</p>
-        </section>
-      )}
-
-      {/* Experience */}
-      {experience.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: template.styles.primaryColor }}>
-            Experience
-          </h2>
-          <div className="space-y-6">
-            {experience.map((exp) => (
-              <div key={exp.id}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-gray-900">{exp.jobTitle}</h3>
-                  <span className="text-xs text-gray-500 font-medium">
-                    {exp.startDate} — {exp.endDate || "Present"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-baseline mb-2">
-                  <span className="text-sm font-semibold text-gray-700">{exp.company}</span>
-                  <span className="text-xs text-gray-400 italic">{exp.location}</span>
-                </div>
-                <ul className="text-sm text-gray-600 leading-relaxed list-disc list-inside space-y-1">
-                  {exp.description.map((bullet, i) => (
-                    <li key={i}>{bullet}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+      <div className={cn("flex-grow", layout.isTwoColumn ? "grid grid-cols-3 gap-8" : "flex flex-col")}>
+        {layout.isTwoColumn ? (
+          <>
+            <div className="col-span-2 space-y-6">
+              {layout.order.filter(s => ['summary', 'experience', 'projects'].includes(s)).map(renderSection)}
+            </div>
+            <div className="col-span-1 space-y-6">
+              {layout.order.filter(s => ['skills', 'education'].includes(s)).map(renderSection)}
+            </div>
+          </>
+        ) : (
+          <div className={cn("space-y-6", layout.spacing === 'compact' ? 'space-y-4' : layout.spacing === 'spacious' ? 'space-y-8' : 'space-y-6')}>
+            {layout.order.map(renderSection)}
           </div>
-        </section>
-      )}
-
-      {/* Education */}
-      {education.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: template.styles.primaryColor }}>
-            Education
-          </h2>
-          <div className="space-y-4">
-            {education.map((edu) => (
-              <div key={edu.id}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-gray-900">{edu.degree}</h3>
-                  <span className="text-xs text-gray-500 font-medium">
-                    {edu.startDate} — {edu.endDate}
-                  </span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm font-semibold text-gray-700">{edu.school}</span>
-                  <span className="text-xs text-gray-400 italic">{edu.location}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Skills */}
-      {skills.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: template.styles.primaryColor }}>
-            Skills
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill, i) => (
-              <span
-                key={i}
-                className="px-2 py-1 bg-gray-50 text-gray-700 text-xs font-semibold rounded border border-gray-100"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Projects */}
-      {projects.length > 0 && (
-        <section>
-          <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: template.styles.primaryColor }}>
-            Projects
-          </h2>
-          <div className="space-y-4">
-            {projects.map((proj) => (
-              <div key={proj.id}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-gray-900">{proj.name}</h3>
-                  {proj.link && <span className="text-xs text-blue-600 font-medium">{proj.link}</span>}
-                </div>
-                <p className="text-sm text-gray-600 leading-relaxed">{proj.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Resume, ResumeContent } from '../types';
-import { TEMPLATES } from '../constants';
+import { Resume, ResumeContent, ResumeCustomization } from '../types';
+import { TEMPLATES, DEFAULT_CUSTOMIZATION, COLOR_PALETTES } from '../constants';
 import { ResumePreview } from '../components/ResumePreview';
 import { 
   ChevronLeft, 
@@ -20,7 +20,12 @@ import {
   Wrench, 
   FolderGit2,
   Sparkles,
-  Loader2
+  Loader2,
+  Palette,
+  X,
+  GripVertical,
+  Columns,
+  EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
@@ -32,6 +37,8 @@ export const Builder: React.FC = () => {
   const navigate = useNavigate();
   const [resume, setResume] = useState<Resume | null>(null);
   const [content, setContent] = useState<ResumeContent | null>(null);
+  const [customization, setCustomization] = useState<ResumeCustomization>(DEFAULT_CUSTOMIZATION);
+  const [showCustomization, setShowCustomization] = useState(false);
   const [activeTab, setActiveTab] = useState<'personal' | 'experience' | 'education' | 'skills' | 'projects'>('personal');
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -213,6 +220,9 @@ export const Builder: React.FC = () => {
         }
         setResume(data);
         setContent(data.content);
+        if (data.customization) {
+          setCustomization(data.customization);
+        }
         setHistory([JSON.parse(JSON.stringify(data.content))]);
         setHistoryIndex(0);
       } else {
@@ -229,6 +239,7 @@ export const Builder: React.FC = () => {
     try {
       await updateDoc(doc(db, 'resumes', id), {
         content,
+        customization,
         lastEdited: serverTimestamp(),
       });
     } catch (error) {
@@ -236,7 +247,7 @@ export const Builder: React.FC = () => {
     } finally {
       setSaving(false);
     }
-  }, [id, content]);
+  }, [id, content, customization]);
 
   // Auto-save
   useEffect(() => {
@@ -244,7 +255,7 @@ export const Builder: React.FC = () => {
       if (content) saveResume();
     }, 5000);
     return () => clearTimeout(timer);
-  }, [content, saveResume]);
+  }, [content, customization, saveResume]);
 
   if (!resume || !content) return null;
 
@@ -489,6 +500,16 @@ export const Builder: React.FC = () => {
                   {saving ? "Saving..." : "Saved"}
                 </span>
                 <button
+                  onClick={() => setShowCustomization(!showCustomization)}
+                  className={cn(
+                    "p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-wider",
+                    showCustomization ? "bg-purple-500/20 text-purple-400" : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  <Palette className="w-4 h-4" />
+                  <span className="hidden sm:inline">Customize</span>
+                </button>
+                <button
                   onClick={() => setShowPreview(!showPreview)}
                   className="md:hidden p-2 bg-white text-black rounded-lg"
                 >
@@ -498,36 +519,235 @@ export const Builder: React.FC = () => {
             </div>
           </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-white/5 overflow-x-auto scrollbar-hide">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex-1 flex flex-col items-center py-3 px-2 min-w-[80px] transition-all border-b-2",
-                activeTab === tab.id 
-                  ? "border-white text-white bg-white/5" 
-                  : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/2"
-              )}
-            >
-              <tab.icon className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">{tab.label}</span>
-            </button>
-          ))}
-        </div>
+        {showCustomization ? (
+          <div className="flex-grow overflow-y-auto p-6 space-y-8 custom-scrollbar bg-[#0A0A0A]">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">Customize Appearance</h2>
+              <button onClick={() => setShowCustomization(false)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-        {/* Form Content */}
-        <div className="flex-grow overflow-y-auto p-6 space-y-8 custom-scrollbar">
-          <AnimatePresence mode="wait">
-            {activeTab === 'personal' && (
-              <motion.div
-                key="personal"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                className="space-y-6"
-              >
+            {/* Colors */}
+            <section className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500">Colors</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {COLOR_PALETTES.map((palette, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCustomization(prev => ({ ...prev, colors: palette }))}
+                    className={cn(
+                      "p-3 rounded-xl border text-left transition-all",
+                      customization.colors.primary === palette.primary 
+                        ? "border-purple-500 bg-purple-500/10" 
+                        : "border-white/10 hover:border-white/30 bg-white/5"
+                    )}
+                  >
+                    <div className="flex gap-2 mb-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: palette.primary }} />
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: palette.secondary }} />
+                      <div className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: palette.background }} />
+                    </div>
+                    <span className="text-xs font-bold text-white">{palette.name}</span>
+                  </button>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-4 rounded-xl border border-white/10 bg-white/5 space-y-4">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Custom Colors</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Primary</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="color" 
+                        value={customization.colors.primary}
+                        onChange={(e) => setCustomization(prev => ({ ...prev, colors: { ...prev.colors, primary: e.target.value } }))}
+                        className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 p-0"
+                      />
+                      <span className="text-xs text-white font-mono">{customization.colors.primary}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Secondary</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="color" 
+                        value={customization.colors.secondary}
+                        onChange={(e) => setCustomization(prev => ({ ...prev, colors: { ...prev.colors, secondary: e.target.value } }))}
+                        className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 p-0"
+                      />
+                      <span className="text-xs text-white font-mono">{customization.colors.secondary}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Text</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="color" 
+                        value={customization.colors.text}
+                        onChange={(e) => setCustomization(prev => ({ ...prev, colors: { ...prev.colors, text: e.target.value } }))}
+                        className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 p-0"
+                      />
+                      <span className="text-xs text-white font-mono">{customization.colors.text}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Background</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="color" 
+                        value={customization.colors.background}
+                        onChange={(e) => setCustomization(prev => ({ ...prev, colors: { ...prev.colors, background: e.target.value } }))}
+                        className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 p-0"
+                      />
+                      <span className="text-xs text-white font-mono">{customization.colors.background}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Layout & Structure */}
+            <section className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500">Layout</h3>
+              
+              <div className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Two Column Layout</h4>
+                    <p className="text-xs text-gray-400">Split content into two columns</p>
+                  </div>
+                  <button
+                    onClick={() => setCustomization(prev => ({ ...prev, layout: { ...prev.layout, isTwoColumn: !prev.layout.isTwoColumn } }))}
+                    className={cn(
+                      "w-12 h-6 rounded-full transition-colors relative",
+                      customization.layout.isTwoColumn ? "bg-purple-500" : "bg-white/20"
+                    )}
+                  >
+                    <div className={cn(
+                      "absolute top-1 w-4 h-4 rounded-full bg-white transition-all",
+                      customization.layout.isTwoColumn ? "right-1" : "left-1"
+                    )} />
+                  </button>
+                </div>
+
+                <div className="pt-4 border-t border-white/10">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Spacing</h4>
+                  <div className="flex gap-2">
+                    {['compact', 'normal', 'spacious'].map((spacing) => (
+                      <button
+                        key={spacing}
+                        onClick={() => setCustomization(prev => ({ ...prev, layout: { ...prev.layout, spacing: spacing as any } }))}
+                        className={cn(
+                          "flex-1 py-2 rounded-lg text-xs font-bold capitalize transition-all",
+                          customization.layout.spacing === spacing
+                            ? "bg-white text-black"
+                            : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+                        )}
+                      >
+                        {spacing}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section Ordering & Visibility */}
+            <section className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500">Sections</h3>
+              <div className="space-y-2">
+                {customization.layout.order.map((section, index) => {
+                  const isHidden = customization.layout.hiddenSections.includes(section);
+                  return (
+                    <div key={section} className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col gap-1">
+                          <button 
+                            disabled={index === 0}
+                            onClick={() => {
+                              const newOrder = [...customization.layout.order];
+                              [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+                              setCustomization(prev => ({ ...prev, layout: { ...prev.layout, order: newOrder } }));
+                            }}
+                            className="text-gray-500 hover:text-white disabled:opacity-30"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                          </button>
+                          <button 
+                            disabled={index === customization.layout.order.length - 1}
+                            onClick={() => {
+                              const newOrder = [...customization.layout.order];
+                              [newOrder[index + 1], newOrder[index]] = [newOrder[index], newOrder[index + 1]];
+                              setCustomization(prev => ({ ...prev, layout: { ...prev.layout, order: newOrder } }));
+                            }}
+                            className="text-gray-500 hover:text-white disabled:opacity-30"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                          </button>
+                        </div>
+                        <span className="text-sm font-bold text-white capitalize">{section}</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setCustomization(prev => {
+                            const hidden = prev.layout.hiddenSections;
+                            return {
+                              ...prev,
+                              layout: {
+                                ...prev.layout,
+                                hiddenSections: isHidden ? hidden.filter(s => s !== section) : [...hidden, section]
+                              }
+                            };
+                          });
+                        }}
+                        className={cn(
+                          "p-2 rounded-lg transition-colors",
+                          isHidden ? "text-gray-500 hover:text-white bg-white/5" : "text-purple-400 bg-purple-500/10 hover:bg-purple-500/20"
+                        )}
+                        title={isHidden ? "Show section" : "Hide section"}
+                      >
+                        {isHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+        ) : (
+          <>
+            {/* Tab Navigation */}
+            <div className="flex border-b border-white/5 overflow-x-auto scrollbar-hide">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex-1 flex flex-col items-center py-3 px-2 min-w-[80px] transition-all border-b-2",
+                    activeTab === tab.id 
+                      ? "border-white text-white bg-white/5" 
+                      : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/2"
+                  )}
+                >
+                  <tab.icon className="w-5 h-5 mb-1" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Form Content */}
+            <div className="flex-grow overflow-y-auto p-6 space-y-8 custom-scrollbar">
+              <AnimatePresence mode="wait">
+                {activeTab === 'personal' && (
+                  <motion.div
+                    key="personal"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    className="space-y-6"
+                  >
                 <h3 className="text-lg font-bold text-white">Personal Information</h3>
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-1">
@@ -951,6 +1171,8 @@ export const Builder: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
+        </>
+        )}
       </div>
 
       {/* Preview Pane */}
@@ -974,7 +1196,7 @@ export const Builder: React.FC = () => {
                 <Eye className="w-4 h-4" /> Preview & Download
               </button>
             </div>
-            <ResumePreview content={content} template={template} />
+            <ResumePreview content={content} template={template} customization={customization} />
           </div>
         </div>
       </div>

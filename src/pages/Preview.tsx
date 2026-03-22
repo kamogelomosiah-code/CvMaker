@@ -17,6 +17,8 @@ export const Preview: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [paperSize, setPaperSize] = useState<'a4' | 'letter'>('a4');
+  const [margin, setMargin] = useState<number>(0);
   const componentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,11 +62,11 @@ export const Preview: React.FC = () => {
         logging: false,
       });
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdf = new jsPDF('p', 'mm', paperSize);
       const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfWidth = pdf.internal.pageSize.getWidth() - (margin * 2);
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, 'PNG', margin, margin, pdfWidth, pdfHeight);
       pdf.save(`${resume?.title || 'resume'}.pdf`);
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -133,12 +135,53 @@ export const Preview: React.FC = () => {
           {/* Left Side: Preview */}
           <div className="flex-grow flex justify-center overflow-x-auto">
             <div ref={componentRef} className="w-full max-w-[800px] bg-white rounded-lg shadow-2xl shrink-0">
-              <ResumePreview content={resume.content} template={template} />
+              <ResumePreview content={resume.content} template={template} customization={resume.customization} />
             </div>
           </div>
 
           {/* Right Side: Control Panel */}
           <div className="w-full lg:w-80 shrink-0 space-y-6">
+            <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="w-5 h-5 text-white" />
+                <h3 className="text-lg font-bold text-white">Export Settings</h3>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Paper Size</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPaperSize('a4')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
+                        paperSize === 'a4' ? 'bg-white text-black' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      A4
+                    </button>
+                    <button
+                      onClick={() => setPaperSize('letter')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
+                        paperSize === 'letter' ? 'bg-white text-black' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      Letter
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Margin (mm): {margin}</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="30"
+                    value={margin}
+                    onChange={(e) => setMargin(Number(e.target.value))}
+                    className="w-full accent-white"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-4">
                 <LayoutTemplate className="w-5 h-5 text-white" />

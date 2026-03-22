@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the ResumeCraft app.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique ID of the user." },
+        "name": { "type": "string", "description": "The display name of the user." },
+        "email": { "type": "string", "description": "The email address of the user." },
+        "planType": { "type": "string", "enum": ["free", "premium"], "description": "The subscription plan of the user." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user account was created." }
+      },
+      "required": ["uid", "email", "planType", "createdAt"]
+    },
+    "Resume": {
+      "title": "Resume",
+      "description": "A resume created by a user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique ID of the resume." },
+        "userId": { "type": "string", "description": "The ID of the user who owns this resume." },
+        "title": { "type": "string", "description": "The title of the resume (e.g., 'Software Engineer Resume')." },
+        "templateId": { "type": "string", "description": "The ID of the template used for this resume." },
+        "content": { "type": "object", "description": "The JSON content of the resume (sections, fields, etc.)." },
+        "lastEdited": { "type": "string", "format": "date-time", "description": "When the resume was last edited." },
+        "isDeleted": { "type": "boolean", "description": "Whether the resume is marked as deleted." }
+      },
+      "required": ["userId", "title", "templateId", "content", "lastEdited"]
+    },
+    "Template": {
+      "title": "Template",
+      "description": "A resume template available in the gallery.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique ID of the template." },
+        "name": { "type": "string", "description": "The name of the template." },
+        "thumbnailUrl": { "type": "string", "description": "The URL of the template's thumbnail image." },
+        "category": { "type": "string", "description": "The category of the template (e.g., 'Modern', 'Classic')." },
+        "styles": { "type": "object", "description": "The CSS styles associated with the template." },
+        "layout": { "type": "string", "description": "The HTML/JSX layout structure of the template." }
+      },
+      "required": ["id", "name", "thumbnailUrl", "category", "styles", "layout"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents."
+    },
+    "/resumes/{resumeId}": {
+      "schema": "Resume",
+      "description": "Resume documents."
+    },
+    "/templates/{templateId}": {
+      "schema": "Template",
+      "description": "Available resume templates."
+    }
+  }
+}

@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Resume } from '../types';
 import { TEMPLATES } from '../constants';
 import { ResumePreview } from '../components/ResumePreview';
-import { Download, Share2, Printer, ChevronLeft, FileText, Loader2, LayoutTemplate } from 'lucide-react';
+import { Download, Share2, Printer, ChevronLeft, FileText, Loader2 } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
+import { cn } from '../lib/utils';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -35,17 +36,6 @@ export const Preview: React.FC = () => {
     };
     fetchResume();
   }, [id]);
-
-  const handleTemplateChange = async (templateId: string) => {
-    if (!id || !resume) return;
-    setSelectedTemplateId(templateId);
-    try {
-      await updateDoc(doc(db, 'resumes', id), { templateId });
-      setResume({ ...resume, templateId });
-    } catch (error) {
-      console.error("Error updating template:", error);
-    }
-  };
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -133,43 +123,45 @@ export const Preview: React.FC = () => {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Side: Preview */}
-          <div className="flex-grow flex justify-center overflow-x-auto">
-            <div ref={componentRef} className="w-full max-w-[800px] bg-white rounded-lg shadow-2xl shrink-0">
+          <div className="flex-grow flex justify-center overflow-x-auto pb-4 sm:pb-0">
+            <div ref={componentRef} className="w-full max-w-[800px] min-w-[700px] bg-white rounded-lg shadow-2xl shrink-0">
               <ResumePreview content={resume.content} template={template} customization={resume.customization} />
             </div>
           </div>
 
           {/* Right Side: Control Panel */}
           <div className="w-full lg:w-80 shrink-0 space-y-6">
-            <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/5 rounded-2xl p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
-                <FileText className="w-5 h-5 text-white" />
-                <h3 className="text-lg font-bold text-white">Export Settings</h3>
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">Export Settings</h3>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Paper Size</label>
+                  <label className="block text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Paper Size</label>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setPaperSize('a4')}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                        paperSize === 'a4' ? 'bg-white text-black' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                      }`}
+                      className={cn(
+                        "flex-1 py-2 rounded-lg text-xs font-bold transition-all border",
+                        paperSize === 'a4' ? "bg-white text-black border-white" : "bg-white/5 text-gray-400 border-white/5 hover:text-white"
+                      )}
                     >
                       A4
                     </button>
                     <button
                       onClick={() => setPaperSize('letter')}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                        paperSize === 'letter' ? 'bg-white text-black' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                      }`}
+                      className={cn(
+                        "flex-1 py-2 rounded-lg text-xs font-bold transition-all border",
+                        paperSize === 'letter' ? "bg-white text-black border-white" : "bg-white/5 text-gray-400 border-white/5 hover:text-white"
+                      )}
                     >
                       Letter
                     </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Margin (mm): {margin}</label>
+                  <label className="block text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Margin (mm): {margin}</label>
                   <input
                     type="range"
                     min="0"
@@ -179,29 +171,6 @@ export const Preview: React.FC = () => {
                     className="w-full accent-white"
                   />
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <LayoutTemplate className="w-5 h-5 text-white" />
-                <h3 className="text-lg font-bold text-white">Change Template</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {TEMPLATES.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => handleTemplateChange(t.id)}
-                    className={`relative rounded-xl overflow-hidden border-2 transition-all ${
-                      selectedTemplateId === t.id ? 'border-blue-500' : 'border-transparent hover:border-white/20'
-                    }`}
-                  >
-                    <img src={t.thumbnailUrl} alt={t.name} className="w-full h-24 object-cover" />
-                    <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-sm p-2">
-                      <p className="text-xs font-bold text-white text-center">{t.name}</p>
-                    </div>
-                  </button>
-                ))}
               </div>
             </div>
           </div>

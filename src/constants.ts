@@ -40,16 +40,6 @@ export const COLOR_PALETTES = [
 
 export const TEMPLATES = [
   {
-    id: "sleek-dark",
-    name: "Sleek Dark",
-    thumbnailUrl: "https://picsum.photos/seed/sleekdark/400/600",
-    category: "Modern",
-    styles: {
-      primaryColor: "#FFFFFF",
-      fontFamily: "Poppins",
-    },
-  },
-  {
     id: "modern-1",
     name: "Modern Professional",
     thumbnailUrl: "https://picsum.photos/seed/modern1/400/600",
@@ -57,26 +47,6 @@ export const TEMPLATES = [
     styles: {
       primaryColor: "#2563eb",
       fontFamily: "Inter",
-    },
-  },
-  {
-    id: "classic-1",
-    name: "Executive Classic",
-    thumbnailUrl: "https://picsum.photos/seed/classic1/400/600",
-    category: "Classic",
-    styles: {
-      primaryColor: "#1f2937",
-      fontFamily: "Georgia",
-    },
-  },
-  {
-    id: "creative-1",
-    name: "Creative Minimalist",
-    thumbnailUrl: "https://picsum.photos/seed/creative1/400/600",
-    category: "Creative",
-    styles: {
-      primaryColor: "#db2777",
-      fontFamily: "Outfit",
     },
   },
 ];

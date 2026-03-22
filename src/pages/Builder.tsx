@@ -25,7 +25,8 @@ import {
   X,
   GripVertical,
   Columns,
-  EyeOff
+  EyeOff,
+  Edit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
@@ -466,17 +467,17 @@ export const Builder: React.FC = () => {
           "flex-grow md:flex-grow-0 md:w-[500px] bg-[#0A0A0A] border-r border-white/5 flex flex-col transition-all",
           showPreview ? "hidden md:flex" : "flex"
         )}>
-          <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/2">
-            <div className="flex items-center gap-2">
+          <div className="p-3 sm:p-4 border-b border-white/5 flex items-center justify-between bg-white/2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white"
+                className="p-1.5 sm:p-2 hover:bg-white/5 rounded-lg transition-colors text-white"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
-              <h2 className="font-bold text-white truncate max-w-[200px]">{resume.title}</h2>
+              <h2 className="font-bold text-white truncate max-w-[120px] sm:max-w-[200px] text-sm sm:text-base">{resume.title}</h2>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <div className="hidden md:flex items-center gap-1">
                 <button 
                   onClick={undo}
@@ -495,25 +496,25 @@ export const Builder: React.FC = () => {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" /></svg>
                 </button>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="hidden sm:inline text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500">
                   {saving ? "Saving..." : "Saved"}
                 </span>
                 <button
                   onClick={() => setShowCustomization(!showCustomization)}
                   className={cn(
-                    "p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-wider",
+                    "p-1.5 sm:p-2 rounded-lg transition-colors flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider",
                     showCustomization ? "bg-purple-500/20 text-purple-400" : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
                   )}
                 >
-                  <Palette className="w-4 h-4" />
+                  <Palette className="w-3.5 h-3.5 sm:w-4 h-4" />
                   <span className="hidden sm:inline">Customize</span>
                 </button>
                 <button
                   onClick={() => setShowPreview(!showPreview)}
-                  className="md:hidden p-2 bg-white text-black rounded-lg"
+                  className="md:hidden p-1.5 sm:p-2 bg-white text-black rounded-lg"
                 >
-                  <Eye className="w-5 h-5" />
+                  {showPreview ? <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
               </div>
             </div>
@@ -521,10 +522,10 @@ export const Builder: React.FC = () => {
 
         {showCustomization ? (
           <div className="flex-grow overflow-y-auto p-6 space-y-8 custom-scrollbar bg-[#0A0A0A]">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Customize Appearance</h2>
-              <button onClick={() => setShowCustomization(false)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5">
-                <X className="w-5 h-5" />
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">Customize Appearance</h2>
+              <button onClick={() => setShowCustomization(false)} className="p-1.5 sm:p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5">
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
@@ -609,38 +610,38 @@ export const Builder: React.FC = () => {
             </section>
 
             {/* Layout & Structure */}
-            <section className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500">Layout</h3>
+            <section className="space-y-3 sm:space-y-4">
+              <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-500">Layout</h3>
               
-              <div className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-4">
+              <div className="p-3 sm:p-4 rounded-xl border border-white/10 bg-white/5 space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-bold text-white">Two Column Layout</h4>
-                    <p className="text-xs text-gray-400">Split content into two columns</p>
+                    <h4 className="text-xs sm:text-sm font-bold text-white">Two Column Layout</h4>
+                    <p className="text-[10px] sm:text-xs text-gray-400">Split content into two columns</p>
                   </div>
                   <button
                     onClick={() => setCustomization(prev => ({ ...prev, layout: { ...prev.layout, isTwoColumn: !prev.layout.isTwoColumn } }))}
                     className={cn(
-                      "w-12 h-6 rounded-full transition-colors relative",
+                      "w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors relative",
                       customization.layout.isTwoColumn ? "bg-purple-500" : "bg-white/20"
                     )}
                   >
                     <div className={cn(
-                      "absolute top-1 w-4 h-4 rounded-full bg-white transition-all",
+                      "absolute top-1 w-3 sm:w-4 h-3 sm:h-4 rounded-full bg-white transition-all",
                       customization.layout.isTwoColumn ? "right-1" : "left-1"
                     )} />
                   </button>
                 </div>
 
-                <div className="pt-4 border-t border-white/10">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Spacing</h4>
-                  <div className="flex gap-2">
+                <div className="pt-3 sm:pt-4 border-t border-white/10">
+                  <h4 className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Spacing</h4>
+                  <div className="flex gap-1.5 sm:gap-2">
                     {['compact', 'normal', 'spacious'].map((spacing) => (
                       <button
                         key={spacing}
                         onClick={() => setCustomization(prev => ({ ...prev, layout: { ...prev.layout, spacing: spacing as any } }))}
                         className={cn(
-                          "flex-1 py-2 rounded-lg text-xs font-bold capitalize transition-all",
+                          "flex-1 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold capitalize transition-all",
                           customization.layout.spacing === spacing
                             ? "bg-white text-black"
                             : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
@@ -655,15 +656,15 @@ export const Builder: React.FC = () => {
             </section>
 
             {/* Section Ordering & Visibility */}
-            <section className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500">Sections</h3>
-              <div className="space-y-2">
+            <section className="space-y-3 sm:space-y-4">
+              <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-500">Sections</h3>
+              <div className="space-y-1.5 sm:space-y-2">
                 {customization.layout.order.map((section, index) => {
                   const isHidden = customization.layout.hiddenSections.includes(section);
                   return (
-                    <div key={section} className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col gap-1">
+                    <div key={section} className="flex items-center justify-between p-2 sm:p-3 rounded-xl border border-white/10 bg-white/5">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex flex-col gap-0.5 sm:gap-1">
                           <button 
                             disabled={index === 0}
                             onClick={() => {
@@ -671,9 +672,9 @@ export const Builder: React.FC = () => {
                               [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
                               setCustomization(prev => ({ ...prev, layout: { ...prev.layout, order: newOrder } }));
                             }}
-                            className="text-gray-500 hover:text-white disabled:opacity-30"
+                            className="text-gray-500 hover:text-white disabled:opacity-30 p-0.5"
                           >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                            <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
                           </button>
                           <button 
                             disabled={index === customization.layout.order.length - 1}
@@ -682,12 +683,12 @@ export const Builder: React.FC = () => {
                               [newOrder[index + 1], newOrder[index]] = [newOrder[index], newOrder[index + 1]];
                               setCustomization(prev => ({ ...prev, layout: { ...prev.layout, order: newOrder } }));
                             }}
-                            className="text-gray-500 hover:text-white disabled:opacity-30"
+                            className="text-gray-500 hover:text-white disabled:opacity-30 p-0.5"
                           >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                            <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                           </button>
                         </div>
-                        <span className="text-sm font-bold text-white capitalize">{section}</span>
+                        <span className="text-xs sm:text-sm font-bold text-white capitalize">{section}</span>
                       </div>
                       <button
                         onClick={() => {
@@ -703,12 +704,12 @@ export const Builder: React.FC = () => {
                           });
                         }}
                         className={cn(
-                          "p-2 rounded-lg transition-colors",
+                          "p-1.5 sm:p-2 rounded-lg transition-colors",
                           isHidden ? "text-gray-500 hover:text-white bg-white/5" : "text-purple-400 bg-purple-500/10 hover:bg-purple-500/20"
                         )}
                         title={isHidden ? "Show section" : "Hide section"}
                       >
-                        {isHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {isHidden ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                       </button>
                     </div>
                   );
@@ -719,20 +720,20 @@ export const Builder: React.FC = () => {
         ) : (
           <>
             {/* Tab Navigation */}
-            <div className="flex border-b border-white/5 overflow-x-auto scrollbar-hide">
+            <div className="flex border-b border-white/5 overflow-x-auto scrollbar-hide bg-white/2">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "flex-1 flex flex-col items-center py-3 px-2 min-w-[80px] transition-all border-b-2",
+                    "flex-1 flex flex-col items-center py-2 sm:py-3 px-1 sm:px-2 min-w-[64px] sm:min-w-[80px] transition-all border-b-2",
                     activeTab === tab.id 
                       ? "border-white text-white bg-white/5" 
                       : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/2"
                   )}
                 >
-                  <tab.icon className="w-5 h-5 mb-1" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">{tab.label}</span>
+                  <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 mb-1" />
+                  <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -760,7 +761,7 @@ export const Builder: React.FC = () => {
                       placeholder="John Doe"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Email</label>
                       <input
@@ -847,7 +848,7 @@ export const Builder: React.FC = () => {
                         <Trash2 className="w-4 h-4" />
                       </button>
                       <div className="grid grid-cols-1 gap-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Job Title</label>
                             <input
@@ -867,7 +868,7 @@ export const Builder: React.FC = () => {
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Start Date</label>
                             <input
@@ -985,7 +986,7 @@ export const Builder: React.FC = () => {
                             className="w-full px-3 py-2 bg-white/5 border border-white/5 rounded-lg text-white outline-none focus:ring-2 focus:ring-white/20"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Start Date</label>
                             <input
@@ -1177,7 +1178,7 @@ export const Builder: React.FC = () => {
 
       {/* Preview Pane */}
         <div className={cn(
-          "flex-grow bg-[#111] overflow-y-auto p-8 md:p-12 transition-all",
+          "flex-grow bg-[#111] overflow-y-auto p-4 sm:p-8 md:p-12 transition-all",
           showPreview ? "flex flex-col" : "hidden md:flex md:flex-col"
         )}>
           <div className="max-w-[800px] mx-auto w-full">
@@ -1191,12 +1192,16 @@ export const Builder: React.FC = () => {
               <div className="hidden md:block" />
               <button
                 onClick={() => navigate(`/preview/${id}`)}
-                className="flex items-center gap-2 bg-white text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-all"
+                className="flex items-center gap-2 bg-white text-black px-4 sm:px-6 py-2 rounded-full font-bold text-xs sm:text-sm hover:bg-gray-200 transition-all"
               >
                 <Eye className="w-4 h-4" /> Preview & Download
               </button>
             </div>
-            <ResumePreview content={content} template={template} customization={customization} />
+            <div className="overflow-x-auto pb-8">
+              <div className="min-w-[700px] bg-white rounded-lg shadow-2xl">
+                <ResumePreview content={content} template={template} customization={customization} />
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -31,7 +31,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <div>
               <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li>Templates</li>
+                <li>Features</li>
                 <li>Builder</li>
                 <li>Pricing</li>
               </ul>

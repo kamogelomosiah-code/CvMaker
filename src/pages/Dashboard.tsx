@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, deleteDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { Resume } from '../types';
@@ -44,6 +44,32 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleCreateResume = async () => {
+    if (!user) return;
+    try {
+      const docRef = await addDoc(collection(db, 'resumes'), {
+        userId: user.uid,
+        title: "New Resume",
+        templateId: "modern-1",
+        content: {
+          personalInfo: { fullName: "", email: "", phone: "", location: "", website: "", summary: "" },
+          experience: [],
+          education: [],
+          skills: [],
+          projects: [],
+        },
+        customization: {
+          colors: { primary: "#2563eb", secondary: "#64748b", text: "#0f172a", background: "#ffffff" },
+          layout: { order: ['summary', 'experience', 'education', 'skills', 'projects'], isTwoColumn: false, spacing: 'normal', hiddenSections: [] },
+        },
+        lastEdited: serverTimestamp(),
+      });
+      navigate(`/builder/${docRef.id}`);
+    } catch (error) {
+      console.error("Error creating resume:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 flex justify-center bg-[#0A0A0A]">
@@ -54,37 +80,37 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-[#0A0A0A]">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">My Resumes</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage and edit your professional resumes.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">My Resumes</h1>
+          <p className="text-gray-500 text-xs sm:text-sm mt-1">Manage and edit your professional resumes.</p>
         </div>
         <button
-          onClick={() => navigate('/templates')}
-          className="flex items-center justify-center gap-2 bg-white text-black px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-200 transition-all shadow-lg"
+          onClick={handleCreateResume}
+          className="flex items-center justify-center gap-2 bg-white text-black px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-200 transition-all shadow-lg w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" /> Create New CV
         </button>
       </div>
 
       {resumes.length === 0 ? (
-        <div className="bg-white/5 border border-white/5 rounded-[32px] p-16 text-center">
-          <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-            <FileText className="w-10 h-10 text-gray-700" />
+        <div className="bg-white/5 border border-white/5 rounded-[24px] sm:rounded-[32px] p-8 sm:p-16 text-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-gray-700" />
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">No resumes yet</h3>
-          <p className="text-gray-500 text-sm mb-8 max-w-sm mx-auto leading-relaxed">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-2">No resumes yet</h3>
+          <p className="text-gray-500 text-xs sm:text-sm mb-8 max-w-sm mx-auto leading-relaxed">
             Start by creating your first professional resume using our expert templates.
           </p>
           <button
-            onClick={() => navigate('/templates')}
+            onClick={handleCreateResume}
             className="text-white font-bold text-sm hover:underline"
           >
             Create your first resume &rarr;
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {resumes.map((resume) => (
             <motion.div
               layout

@@ -10,7 +10,6 @@ export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const navLinks = [
-    { name: 'Templates', path: '/templates' },
     { name: 'Dashboard', path: '/dashboard', protected: true },
   ];
 
@@ -91,6 +90,17 @@ export const Navbar: React.FC = () => {
             className="md:hidden bg-[#0A0A0A] border-t border-white/5 overflow-hidden"
           >
             <div className="px-4 pt-2 pb-6 space-y-1">
+              {user && (
+                <div className="flex items-center gap-3 px-3 py-4 mb-2 border-b border-white/5">
+                  <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center">
+                    <UserIcon className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">{profile?.name || 'User'}</p>
+                    <p className="text-xs text-gray-500 truncate max-w-[200px]">{user.email}</p>
+                  </div>
+                </div>
+              )}
               {navLinks.map((link) => (
                 (!link.protected || user) && (
                   <Link

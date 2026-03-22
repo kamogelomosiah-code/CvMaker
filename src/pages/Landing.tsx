@@ -75,12 +75,6 @@ export const Landing: React.FC = () => {
                   Get Started for Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               )}
-              <Link
-                to="/templates"
-                className="w-full sm:w-auto bg-transparent text-white border border-white/10 px-10 py-5 rounded-full font-bold text-sm hover:bg-white/5 transition-all backdrop-blur-sm"
-              >
-                Browse Templates
-              </Link>
             </motion.div>
           </div>
         </div>

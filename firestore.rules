@@ -92,12 +92,13 @@ service cloud.firestore {
 
     function isValidResume(data) {
       return data.keys().hasAll(['userId', 'title', 'templateId', 'content', 'lastEdited']) &&
-             data.keys().hasOnly(['userId', 'title', 'templateId', 'content', 'lastEdited', 'isDeleted', 'id']) &&
+             data.keys().hasOnly(['userId', 'title', 'templateId', 'content', 'lastEdited', 'isDeleted', 'id', 'customization']) &&
              data.userId is string && data.userId == request.auth.uid &&
              data.title is string && data.title.size() <= 100 &&
              data.templateId is string &&
              data.content is map &&
              data.lastEdited is timestamp &&
+             (!('customization' in data) || data.customization is map) &&
              (!('isDeleted' in data) || data.isDeleted is bool) &&
              (!('id' in data) || data.id is string);
     }

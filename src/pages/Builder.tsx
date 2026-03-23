@@ -101,7 +101,8 @@ export const Builder: React.FC = () => {
         ...prev,
         experience: prev.experience.map(exp => {
           if (exp.id === expId) {
-            const newDesc = [...exp.description];
+            const currentDesc = Array.isArray(exp.description) ? exp.description : typeof exp.description === 'string' ? [exp.description] : [];
+            const newDesc = [...currentDesc];
             newDesc[index] = value;
             return { ...exp, description: newDesc };
           }
@@ -120,7 +121,8 @@ export const Builder: React.FC = () => {
         ...prev,
         experience: prev.experience.map(exp => {
           if (exp.id === expId) {
-            return { ...exp, description: [...exp.description, ""] };
+            const currentDesc = Array.isArray(exp.description) ? exp.description : typeof exp.description === 'string' ? [exp.description] : [];
+            return { ...exp, description: [...currentDesc, ""] };
           }
           return exp;
         })
@@ -137,7 +139,8 @@ export const Builder: React.FC = () => {
         ...prev,
         experience: prev.experience.map(exp => {
           if (exp.id === expId) {
-            return { ...exp, description: exp.description.filter((_, i) => i !== index) };
+            const currentDesc = Array.isArray(exp.description) ? exp.description : typeof exp.description === 'string' ? [exp.description] : [];
+            return { ...exp, description: currentDesc.filter((_, i) => i !== index) };
           }
           return exp;
         })
@@ -219,6 +222,30 @@ export const Builder: React.FC = () => {
           navigate('/dashboard');
           return;
         }
+
+        // Ensure descriptions are arrays for backward compatibility
+        if (data.content.experience) {
+          data.content.experience = data.content.experience.map(exp => ({
+            ...exp,
+            description: Array.isArray(exp.description) 
+              ? exp.description 
+              : typeof exp.description === 'string' 
+                ? [exp.description] 
+                : ['']
+          }));
+        }
+        
+        if (data.content.education) {
+          data.content.education = data.content.education.map(edu => ({
+            ...edu,
+            description: Array.isArray(edu.description) 
+              ? edu.description 
+              : typeof edu.description === 'string' 
+                ? [edu.description] 
+                : ['']
+          }));
+        }
+
         setResume(data);
         setContent(data.content);
         if (data.customization) {
@@ -901,7 +928,7 @@ export const Builder: React.FC = () => {
                             </button>
                           </div>
                           <div className="space-y-3">
-                            {exp.description.map((bullet, index) => (
+                            {(Array.isArray(exp.description) ? exp.description : typeof exp.description === 'string' ? [exp.description] : []).map((bullet, index) => (
                               <div key={index} className="flex gap-2 group/bullet">
                                 <div className="flex-grow relative">
                                   <input
@@ -1197,9 +1224,17 @@ export const Builder: React.FC = () => {
                 <Eye className="w-4 h-4" /> Preview & Download
               </button>
             </div>
-            <div className="overflow-x-auto pb-8">
-              <div className="min-w-[700px] bg-white rounded-lg shadow-2xl">
-                <ResumePreview content={content} template={template} customization={customization} />
+            <div className="pb-8 w-full flex justify-center">
+              <div 
+                className="w-full max-w-[800px] relative bg-white rounded-lg shadow-2xl overflow-hidden" 
+                style={{ containerType: 'inline-size', aspectRatio: '1 / 1.414' }}
+              >
+                <div 
+                  className="absolute top-0 left-0 w-[800px] origin-top-left" 
+                  style={{ transform: 'scale(calc(100cqw / 800))' }}
+                >
+                  <ResumePreview content={content} template={template} customization={customization} />
+                </div>
               </div>
             </div>
           </div>

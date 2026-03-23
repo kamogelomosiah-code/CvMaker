@@ -10,6 +10,7 @@ import { Layout } from './components/Layout';
 import { Landing } from './pages/Landing';
 import { Dashboard } from './pages/Dashboard';
 import { Builder } from './pages/Builder';
+import { Templates } from './pages/Templates';
 import { Preview } from './pages/Preview';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -26,6 +27,7 @@ export default function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/templates" element={<Templates />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />

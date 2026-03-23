@@ -10,6 +10,7 @@ export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const navLinks = [
+    { name: 'Templates', path: '/templates' },
     { name: 'Dashboard', path: '/dashboard', protected: true },
   ];
 

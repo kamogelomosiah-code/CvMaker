@@ -123,9 +123,16 @@ export const Preview: React.FC = () => {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Side: Preview */}
-          <div className="flex-grow flex justify-center overflow-x-auto pb-4 sm:pb-0">
-            <div ref={componentRef} className="w-full max-w-[800px] min-w-[700px] bg-white rounded-lg shadow-2xl shrink-0">
-              <ResumePreview content={resume.content} template={template} customization={resume.customization} />
+          <div className="flex-grow flex justify-center pb-4 sm:pb-0">
+            <div className="w-full max-w-[800px] relative bg-white rounded-lg shadow-2xl overflow-hidden" style={{ containerType: 'inline-size', aspectRatio: '1 / 1.414' }}>
+              <div 
+                className="absolute top-0 left-0 w-[800px] origin-top-left" 
+                style={{ transform: 'scale(calc(100cqw / 800))' }}
+              >
+                <div ref={componentRef} className="w-[800px] h-[1131px] bg-white">
+                  <ResumePreview content={resume.content} template={template} customization={resume.customization} />
+                </div>
+              </div>
             </div>
           </div>
 

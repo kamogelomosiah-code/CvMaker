@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, FileText, Plus, Sparkles, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { ResumeContent } from '../types';
 import { INITIAL_RESUME_CONTENT } from '../constants';
+import mammoth from 'mammoth/mammoth.browser';
 
 interface CreateResumeModalProps {
   isOpen: boolean;
@@ -23,17 +24,45 @@ export const CreateResumeModal: React.FC<CreateResumeModalProps> = ({
   const [parsing, setParsing] = useState(false);
   const [extractedData, setExtractedData] = useState<ResumeContent | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const selectedFile = e.dataTransfer.files?.[0];
+    if (selectedFile) {
+      processFile(selectedFile);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.type === 'application/pdf' || selectedFile.type === 'text/plain') {
-        setFile(selectedFile);
-        setStep('parsing');
-        parseResume(selectedFile);
-      } else {
-        setError("Please upload a PDF or TXT file.");
-      }
+      processFile(selectedFile);
+    }
+  };
+
+  const processFile = (selectedFile: File) => {
+    const validTypes = ['application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+    const validExtensions = ['.pdf', '.txt', '.doc', '.docx'];
+    
+    if (validTypes.includes(selectedFile.type) || validExtensions.some(ext => selectedFile.name.toLowerCase().endsWith(ext))) {
+      setFile(selectedFile);
+      setStep('parsing');
+      parseResume(selectedFile);
+    } else {
+      setError("Please upload a PDF, Word document, or TXT file.");
     }
   };
 
@@ -41,29 +70,33 @@ export const CreateResumeModal: React.FC<CreateResumeModalProps> = ({
     setParsing(true);
     setError(null);
     try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64Data = (reader.result as string).split(',')[1];
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-        
-        const prompt = `Extract resume information from this file into a structured JSON format. 
-        The JSON must strictly follow this schema:
-        {
-          "personalInfo": { "fullName": string, "email": string, "phone": string, "location": string, "website": string, "summary": string },
-          "experience": [{ "id": string, "jobTitle": string, "company": string, "location": string, "startDate": string, "endDate": string, "description": string }],
-          "education": [{ "id": string, "school": string, "degree": string, "location": string, "startDate": string, "endDate": string, "description": string }],
-          "skills": string[],
-          "projects": [{ "id": string, "name": string, "description": string, "link": string }]
-        }
-        If a field is missing, use an empty string or empty array. Generate unique IDs for experience, education, and projects.`;
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const prompt = `Extract resume information from this file into a structured JSON format. 
+      The JSON must strictly follow this schema:
+      {
+        "personalInfo": { "fullName": string, "email": string, "phone": string, "location": string, "website": string, "summary": string },
+        "experience": [{ "id": string, "jobTitle": string, "company": string, "location": string, "startDate": string, "endDate": string, "description": string[] }],
+        "education": [{ "id": string, "school": string, "degree": string, "location": string, "startDate": string, "endDate": string, "description": string[] }],
+        "skills": string[],
+        "projects": [{ "id": string, "name": string, "description": string, "link": string }]
+      }
+      If a field is missing, use an empty string or empty array. Generate unique IDs for experience, education, and projects.`;
 
-        const response = await ai.models.generateContent({
+      let response;
+
+      if (file.name.toLowerCase().endsWith('.docx') || file.name.toLowerCase().endsWith('.doc') || file.type.includes('word')) {
+        // Extract text using mammoth
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        const text = result.value;
+        
+        response = await ai.models.generateContent({
           model: "gemini-3-flash-preview",
           contents: [
             {
               parts: [
                 { text: prompt },
-                { inlineData: { mimeType: file.type, data: base64Data } }
+                { text: `Here is the text extracted from the resume document:\n\n${text}` }
               ]
             }
           ],
@@ -71,12 +104,112 @@ export const CreateResumeModal: React.FC<CreateResumeModalProps> = ({
             responseMimeType: "application/json"
           }
         });
+      } else {
+        // PDF or TXT
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
 
-        const data = JSON.parse(response.text || "{}") as ResumeContent;
+        response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                { inlineData: { mimeType: file.type || 'application/pdf', data: base64Data } }
+              ]
+            }
+          ],
+          config: {
+            responseMimeType: "application/json"
+          }
+        });
+      }
+
+      const data = JSON.parse(response.text || "{}") as ResumeContent;
+        
+        // Ensure descriptions are arrays and IDs exist
+        if (data.experience) {
+          data.experience = data.experience.map(exp => {
+            let descArray: string[] = [];
+            const rawDesc = exp.description as any;
+            if (Array.isArray(rawDesc)) {
+              descArray = rawDesc;
+            } else if (typeof rawDesc === 'string') {
+              descArray = rawDesc.split('\n').map(s => s.replace(/^[-•*]\s*/, '').trim()).filter(Boolean);
+            }
+            if (descArray.length === 0) descArray = [''];
+            return { 
+              ...exp, 
+              id: exp.id || Math.random().toString(36).substr(2, 9),
+              jobTitle: exp.jobTitle || '',
+              company: exp.company || '',
+              location: exp.location || '',
+              startDate: exp.startDate || '',
+              endDate: exp.endDate || '',
+              description: descArray 
+            };
+          });
+        } else {
+          data.experience = [];
+        }
+
+        if (data.education) {
+          data.education = data.education.map(edu => {
+            let descArray: string[] = [];
+            const rawDesc = edu.description as any;
+            if (Array.isArray(rawDesc)) {
+              descArray = rawDesc;
+            } else if (typeof rawDesc === 'string') {
+              descArray = rawDesc.split('\n').map(s => s.replace(/^[-•*]\s*/, '').trim()).filter(Boolean);
+            }
+            if (descArray.length === 0) descArray = [''];
+            return { 
+              ...edu, 
+              id: edu.id || Math.random().toString(36).substr(2, 9),
+              school: edu.school || '',
+              degree: edu.degree || '',
+              location: edu.location || '',
+              startDate: edu.startDate || '',
+              endDate: edu.endDate || '',
+              description: descArray 
+            };
+          });
+        } else {
+          data.education = [];
+        }
+
+        if (data.projects) {
+          data.projects = data.projects.map(proj => ({
+            ...proj,
+            id: proj.id || Math.random().toString(36).substr(2, 9),
+            name: proj.name || '',
+            description: proj.description || '',
+            link: proj.link || ''
+          }));
+        } else {
+          data.projects = [];
+        }
+
+        if (!data.skills) data.skills = [];
+        if (!data.personalInfo) {
+          data.personalInfo = INITIAL_RESUME_CONTENT.personalInfo;
+        } else {
+          data.personalInfo = { 
+            fullName: data.personalInfo.fullName || '',
+            email: data.personalInfo.email || '',
+            phone: data.personalInfo.phone || '',
+            location: data.personalInfo.location || '',
+            website: data.personalInfo.website || '',
+            summary: data.personalInfo.summary || ''
+          };
+        }
+
         setExtractedData(data);
         setStep('review');
-      };
-      reader.readAsDataURL(file);
     } catch (err) {
       console.error(err);
       setError("Failed to parse resume. Please try manual entry.");
@@ -123,7 +256,7 @@ export const CreateResumeModal: React.FC<CreateResumeModalProps> = ({
                       </div>
                       <div>
                         <h3 className="font-bold text-white">Import Existing</h3>
-                        <p className="text-sm text-gray-500">Upload PDF or TXT to auto-fill</p>
+                        <p className="text-sm text-gray-500">Upload PDF, Word, or TXT to auto-fill</p>
                       </div>
                     </div>
                     <p className="text-sm text-gray-400 leading-relaxed">
@@ -153,10 +286,17 @@ export const CreateResumeModal: React.FC<CreateResumeModalProps> = ({
 
               {step === 'upload' && (
                 <div className="space-y-6">
-                  <div className="border-2 border-dashed border-white/10 rounded-3xl p-12 text-center hover:border-white/30 transition-all relative">
+                  <div 
+                    className={`border-2 border-dashed rounded-3xl p-12 text-center transition-all relative ${
+                      isDragging ? 'border-purple-500 bg-purple-500/10' : 'border-white/10 hover:border-white/30'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
                     <input
                       type="file"
-                      accept=".pdf,.txt"
+                      accept=".pdf,.txt,.doc,.docx,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                       onChange={handleFileChange}
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
@@ -164,7 +304,7 @@ export const CreateResumeModal: React.FC<CreateResumeModalProps> = ({
                       <Upload className="w-8 h-8" />
                     </div>
                     <h3 className="font-bold text-white mb-2">Upload your resume</h3>
-                    <p className="text-sm text-gray-500">Drag and drop or click to browse (PDF, TXT)</p>
+                    <p className="text-sm text-gray-500">Drag and drop or click to browse (PDF, Word, TXT)</p>
                   </div>
                   {error && (
                     <div className="flex items-center gap-2 text-red-400 text-sm font-medium bg-red-500/10 p-4 rounded-xl border border-red-500/20">

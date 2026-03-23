@@ -23,6 +23,7 @@
         "title": { "type": "string", "description": "The title of the resume (e.g., 'Software Engineer Resume')." },
         "templateId": { "type": "string", "description": "The ID of the template used for this resume." },
         "content": { "type": "object", "description": "The JSON content of the resume (sections, fields, etc.)." },
+        "customization": { "type": "object", "description": "The customization settings for the resume." },
         "lastEdited": { "type": "string", "format": "date-time", "description": "When the resume was last edited." },
         "isDeleted": { "type": "boolean", "description": "Whether the resume is marked as deleted." }
       },

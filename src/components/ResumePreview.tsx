@@ -41,9 +41,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ content, template,
                   </div>
                   <p className="text-sm font-medium mb-2" style={{ color: colors.secondary }}>{exp.company}</p>
                   <ul className="text-sm leading-relaxed list-disc list-inside space-y-1" style={{ color: colors.text }}>
-                    {exp.description.map((bullet, i) => (
+                    {Array.isArray(exp.description) ? exp.description.map((bullet, i) => (
                       <li key={i}>{bullet}</li>
-                    ))}
+                    )) : typeof exp.description === 'string' ? (
+                      <li>{exp.description}</li>
+                    ) : null}
                   </ul>
                 </div>
               ))}

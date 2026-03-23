@@ -44,32 +44,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const handleCreateResume = async () => {
-    if (!user) return;
-    try {
-      const docRef = await addDoc(collection(db, 'resumes'), {
-        userId: user.uid,
-        title: "New Resume",
-        templateId: "modern-1",
-        content: {
-          personalInfo: { fullName: "", email: "", phone: "", location: "", website: "", summary: "" },
-          experience: [],
-          education: [],
-          skills: [],
-          projects: [],
-        },
-        customization: {
-          colors: { primary: "#2563eb", secondary: "#64748b", text: "#0f172a", background: "#ffffff" },
-          layout: { order: ['summary', 'experience', 'education', 'skills', 'projects'], isTwoColumn: false, spacing: 'normal', hiddenSections: [] },
-        },
-        lastEdited: serverTimestamp(),
-      });
-      navigate(`/builder/${docRef.id}`);
-    } catch (error) {
-      console.error("Error creating resume:", error);
-    }
-  };
-
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 flex justify-center bg-[#0A0A0A]">
@@ -86,7 +60,7 @@ export const Dashboard: React.FC = () => {
           <p className="text-gray-500 text-xs sm:text-sm mt-1">Manage and edit your professional resumes.</p>
         </div>
         <button
-          onClick={handleCreateResume}
+          onClick={() => navigate('/templates')}
           className="flex items-center justify-center gap-2 bg-white text-black px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-200 transition-all shadow-lg w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" /> Create New CV
@@ -103,7 +77,7 @@ export const Dashboard: React.FC = () => {
             Start by creating your first professional resume using our expert templates.
           </p>
           <button
-            onClick={handleCreateResume}
+            onClick={() => navigate('/templates')}
             className="text-white font-bold text-sm hover:underline"
           >
             Create your first resume &rarr;

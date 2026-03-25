@@ -6,6 +6,7 @@ import { useAuth } from '../AuthContext';
 import { Resume, ResumeContent, ResumeCustomization } from '../types';
 import { TEMPLATES, DEFAULT_CUSTOMIZATION, COLOR_PALETTES } from '../constants';
 import { ResumePreview } from '../components/ResumePreview';
+import { AIReviewModal, AISuggestion } from '../components/AIReviewModal';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -42,10 +43,38 @@ export const Builder: React.FC = () => {
   const [showCustomization, setShowCustomization] = useState(false);
   const [activeTab, setActiveTab] = useState<'personal' | 'experience' | 'education' | 'skills' | 'projects'>('personal');
   const [showPreview, setShowPreview] = useState(false);
+  const [showAIReview, setShowAIReview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [history, setHistory] = useState<ResumeContent[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const applyAIEdit = (edit: AISuggestion) => {
+    setContent(prev => {
+      if (!prev) return null;
+      const next = { ...prev };
+      
+      if (edit.type === 'summary') {
+        next.personalInfo = { ...next.personalInfo, summary: edit.suggestedText };
+      } else if (edit.type === 'experience' && edit.itemId !== undefined && edit.bulletIndex !== undefined) {
+        next.experience = next.experience.map(exp => {
+          if (exp.id === edit.itemId) {
+            const currentDesc = Array.isArray(exp.description) ? exp.description : typeof exp.description === 'string' ? [exp.description] : [];
+            const newDesc = [...currentDesc];
+            const bIndex = Number(edit.bulletIndex);
+            if (!isNaN(bIndex)) {
+              newDesc[bIndex] = edit.suggestedText;
+            }
+            return { ...exp, description: newDesc };
+          }
+          return exp;
+        });
+      }
+      
+      pushToHistory(next);
+      return next;
+    });
+  };
 
   const pushToHistory = (newContent: ResumeContent) => {
     const newHistory = history.slice(0, historyIndex + 1);
@@ -527,6 +556,13 @@ export const Builder: React.FC = () => {
                 <span className="hidden sm:inline text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500">
                   {saving ? "Saving..." : "Saved"}
                 </span>
+                <button
+                  onClick={() => setShowAIReview(true)}
+                  className="p-1.5 sm:p-2 rounded-lg transition-colors flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                >
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 h-4" />
+                  <span className="hidden sm:inline">AI Review</span>
+                </button>
                 <button
                   onClick={() => setShowCustomization(!showCustomization)}
                   className={cn(
@@ -1240,6 +1276,15 @@ export const Builder: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {content && (
+        <AIReviewModal
+          isOpen={showAIReview}
+          onClose={() => setShowAIReview(false)}
+          content={content}
+          onApplyEdit={applyAIEdit}
+        />
+      )}
     </div>
   );
 };

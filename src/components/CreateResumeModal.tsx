@@ -4,7 +4,7 @@ import { X, Upload, FileText, Plus, Sparkles, Loader2, CheckCircle2, AlertCircle
 import { GoogleGenAI, Type } from "@google/genai";
 import { ResumeContent } from '../types';
 import { INITIAL_RESUME_CONTENT } from '../constants';
-import mammoth from 'mammoth/mammoth.browser';
+import * as mammoth from 'mammoth';
 
 interface CreateResumeModalProps {
   isOpen: boolean;

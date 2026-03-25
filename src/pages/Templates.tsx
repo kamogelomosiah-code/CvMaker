@@ -25,13 +25,14 @@ export const Templates: React.FC = () => {
 
   const createResume = async (content: ResumeContent) => {
     if (!user || !selectedTemplateForModal) return;
-    setLoadingId(selectedTemplateForModal);
+    const templateId = selectedTemplateForModal;
+    setLoadingId(templateId);
     setSelectedTemplateForModal(null);
     try {
       const docRef = await addDoc(collection(db, 'resumes'), {
         userId: user.uid,
         title: "Untitled Resume",
-        templateId: selectedTemplateForModal,
+        templateId: templateId,
         content,
         customization: DEFAULT_CUSTOMIZATION,
         lastEdited: serverTimestamp(),

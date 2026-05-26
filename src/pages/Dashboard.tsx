@@ -74,7 +74,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <h3 className="text-lg sm:text-xl font-bold text-white mb-2">No resumes yet</h3>
           <p className="text-gray-500 text-xs sm:text-sm mb-8 max-w-sm mx-auto leading-relaxed">
-            Start by creating your first professional resume using our expert templates.
+            Start by creating your first professional resume using our intelligent builder.
           </p>
           <button
             onClick={() => navigate('/templates')}

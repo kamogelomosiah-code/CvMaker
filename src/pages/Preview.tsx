@@ -17,7 +17,6 @@ export const Preview: React.FC = () => {
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [paperSize, setPaperSize] = useState<'a4' | 'letter'>('a4');
   const [margin, setMargin] = useState<number>(0);
   const componentRef = useRef<HTMLDivElement>(null);
@@ -30,7 +29,6 @@ export const Preview: React.FC = () => {
       if (docSnap.exists()) {
         const data = { id: docSnap.id, ...docSnap.data() } as Resume;
         setResume(data);
-        setSelectedTemplateId(data.templateId);
       }
       setLoading(false);
     };
@@ -81,8 +79,6 @@ export const Preview: React.FC = () => {
     );
   }
 
-  const template = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
-
   return (
     <div className="min-h-screen bg-[#0A0A0A] py-12">
       <div className="max-w-7xl mx-auto px-4">
@@ -130,7 +126,7 @@ export const Preview: React.FC = () => {
                 style={{ transform: 'scale(calc(100cqw / 800))' }}
               >
                 <div ref={componentRef} className="w-[800px] h-[1131px] bg-white">
-                  <ResumePreview content={resume.content} template={template} customization={resume.customization} />
+                  <ResumePreview content={resume.content} customization={resume.customization} />
                 </div>
               </div>
             </div>

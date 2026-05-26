@@ -42,7 +42,6 @@ export const Builder: React.FC = () => {
   const [customization, setCustomization] = useState<ResumeCustomization>(DEFAULT_CUSTOMIZATION);
   const [showCustomization, setShowCustomization] = useState(false);
   const [activeTab, setActiveTab] = useState<'personal' | 'experience' | 'education' | 'skills' | 'projects'>('personal');
-  const [showPreview, setShowPreview] = useState(false);
   const [showAIReview, setShowAIReview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState<string | null>(null);
@@ -519,10 +518,7 @@ export const Builder: React.FC = () => {
 
       <div className="flex-grow flex overflow-hidden">
         {/* Sidebar Editor */}
-        <div className={cn(
-          "flex-grow md:flex-grow-0 md:w-[500px] bg-[#0A0A0A] border-r border-white/5 flex flex-col transition-all",
-          showPreview ? "hidden md:flex" : "flex"
-        )}>
+        <div className="flex-grow md:flex-grow-0 md:w-[500px] bg-[#0A0A0A] border-r border-white/5 flex flex-col transition-all">
           <div className="p-3 sm:p-4 border-b border-white/5 flex items-center justify-between bg-white/2">
             <div className="flex items-center gap-1.5 sm:gap-2">
               <button
@@ -574,10 +570,10 @@ export const Builder: React.FC = () => {
                   <span className="hidden sm:inline">Customize</span>
                 </button>
                 <button
-                  onClick={() => setShowPreview(!showPreview)}
+                  onClick={() => navigate(`/preview/${id}`)}
                   className="md:hidden p-1.5 sm:p-2 bg-white text-black rounded-lg"
                 >
-                  {showPreview ? <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
@@ -1240,18 +1236,9 @@ export const Builder: React.FC = () => {
       </div>
 
       {/* Preview Pane */}
-        <div className={cn(
-          "flex-grow bg-[#111] overflow-y-auto p-4 sm:p-8 md:p-12 transition-all",
-          showPreview ? "flex flex-col" : "hidden md:flex md:flex-col"
-        )}>
+        <div className="hidden md:flex md:flex-col flex-grow bg-[#111] overflow-y-auto p-4 sm:p-8 md:p-12 transition-all">
           <div className="max-w-[800px] mx-auto w-full">
             <div className="flex justify-between items-center mb-6">
-              <button
-                onClick={() => setShowPreview(false)}
-                className="md:hidden flex items-center gap-2 text-white font-bold"
-              >
-                <ChevronLeft className="w-5 h-5" /> Back to Editor
-              </button>
               <div className="hidden md:block" />
               <button
                 onClick={() => navigate(`/preview/${id}`)}
@@ -1269,7 +1256,7 @@ export const Builder: React.FC = () => {
                   className="absolute top-0 left-0 w-[800px] origin-top-left" 
                   style={{ transform: 'scale(calc(100cqw / 800))' }}
                 >
-                  <ResumePreview content={content} template={template} customization={customization} />
+                  <ResumePreview content={content} customization={customization} />
                 </div>
               </div>
             </div>
